@@ -21,7 +21,7 @@ function constructCodebook( knownBuf, blocksize ){
     for( var i=0; i<=255; i++ ){
         inputBuf[inputBuf.length-1] = i;
         var result = encryptData( inputBuf, key );
-        codebook[ result.subarray(inputBuf.length - blocksize,inputBuf.length).toString('hex') ] = i;
+        codebook[ result.subarray(0,blocksize).toString('hex') ] = i;
     }
     return codebook;
 }

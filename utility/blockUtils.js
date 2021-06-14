@@ -152,25 +152,6 @@ function detectBlockSize( cipher, maxBlockSize = 256 ){
     return 0;
 }
 
-// function detectECBBlockSize( ecbCipher, maxBlockSize = 256 ){
-//     var firstMatch = 0;
-//     for( var count = 1; count < maxBlockSize; count++ ){
-//         var chosenText = Buffer.alloc(count,'A');
-//         var result = ecbCipher(chosenText);
-//         var matches = detectECBMode(result);
-//         if( matches == 1 && firstMatch == 0 ){
-//             firstMatch = count;
-//             console.log(`ECB Block Detection: Found first match at count: ${count}`)
-//         }
-//         if( matches >= 2 ) {
-//             console.log(`ECB Block Detection: Found second match at count: ${count}`);
-//             console.log(`ECB Block Detection: Blocksize detected as: ${count - firstMatch}`);
-//             return count - firstMatch;
-//         }
-//     }
-//     return 0;
-// }
-
 module.exports = {
     pkcs7pad,
     createBlockStream,

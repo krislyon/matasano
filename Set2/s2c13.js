@@ -6,7 +6,6 @@
 //
 /////////////////////////////////////////////////////
 const crypto = require('crypto');
-const { getMaxListeners } = require('process');
 const { aes128EcbDecrypt, aes128EcbEncrypt, detectBlockSize, detectECBMode } = require('../utility/blockUtils')
 var aesKey = crypto.randomBytes(16);
 
