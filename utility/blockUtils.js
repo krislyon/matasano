@@ -1,12 +1,6 @@
 const crypto = require('crypto')
 const { repeatingXorEncrypt } = require('./xorUtils')
-
-function pkcs7pad(buffer,blocksize){
-    var pad = blocksize - (buffer.length % blocksize);
-    pad = (pad == 0) ? blocksize : pad;
-    const padBuffer = Buffer.alloc(blocksize,pad);
-    return Buffer.concat( [buffer, padBuffer.subarray(0,pad)] );
-}
+const { applyPkcs7Padding } = require('./pkcs7')
 
 const createBlockStream = (buffer, blocksize) => {
     var blockStream = new Object();
@@ -38,11 +32,10 @@ const createBlockStream = (buffer, blocksize) => {
 const getBlockArray = (buffer,blocksize,applyPadding) => {
     var blocks = [];
     if( applyPadding ){
-        buffer = pkcs7pad( buffer, blocksize );
+        buffer = applyPkcs7Padding( buffer, blocksize );
     }
     for( var i=0; i<(buffer.length/blocksize); i++ ){
         blocks[i] = buffer.subarray(i*blocksize,(i*blocksize)+blocksize);
-        //console.log( blocks[i].toString('hex'));
     }
     return blocks;
 }
@@ -153,7 +146,6 @@ function detectBlockSize( cipher, maxBlockSize = 256 ){
 }
 
 module.exports = {
-    pkcs7pad,
     createBlockStream,
     aes128EcbDecrypt,
     aes128EcbEncrypt,
