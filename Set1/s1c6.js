@@ -2,8 +2,8 @@
 // Matasano Challenges (while learning Node.js)
 // S1C6: Break Repeating Key XOR
 /////////////////////////////////////////////////////
-const { calc_hamming_distance } = require('../../utility/textstats');
-const { transposeDataBlocks, crackSingleByteXOR, repeatingXorEncrypt } = require('../../utility/xorUtils');
+const { calc_hamming_distance } = require('../utility/textstats');
+const { transposeDataBlocks, crackSingleByteXOR, repeatingXorEncrypt } = require('../utility/xorUtils');
 const fs = require('fs');
 
 // Step1: Validate Hamming Distance Function
@@ -15,7 +15,7 @@ if( 37 != calc_hamming_distance( Buffer.from("this is a test"), Buffer.from("wok
 }
 
 // Step2: Load our data, strip new lines, and base64 decode it.
-var fileData = fs.readFileSync('./matasano/Set1/data/6.txt', 'ascii');
+var fileData = fs.readFileSync('./Set1/data/6.txt', 'ascii');
 fileData = fileData.replace(/\r?\n|\r/g,"").trim();
 const data = Buffer.from( fileData, 'base64');
 console.log("Loaded Dataset");

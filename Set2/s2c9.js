@@ -2,11 +2,7 @@
 // Matasano Challenges (while learning Node.js)
 // S2C9: PKCS#7 Padding
 /////////////////////////////////////////////////////
-function pkcs7pad(buffer,blocksize){
-    const padBuffer = Buffer.from('04040404040404040404040404040404','hex');
-    const pad = blocksize - (buffer.length % blocksize);
-    return Buffer.concat( [buffer, padBuffer.subarray(0,pad)] );
-}
+const { pkcs7pad } = require('../utility/blockUtils');
 
 function paddingTest( text, blocksize ){
     const result = pkcs7pad( Buffer.from(text), blocksize );

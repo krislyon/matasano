@@ -2,9 +2,9 @@ const crypto = require('crypto')
 const { repeatingXorEncrypt } = require('./xorUtils')
 
 function pkcs7pad(buffer,blocksize){
-    const pad = blocksize - (buffer.length % blocksize);
+    var pad = blocksize - (buffer.length % blocksize);
+    pad = (pad == 0) ? blocksize : pad;
     const padBuffer = Buffer.alloc(blocksize,pad);
-    if( pad == blocksize ) return buffer;
     return Buffer.concat( [buffer, padBuffer.subarray(0,pad)] );
 }
 

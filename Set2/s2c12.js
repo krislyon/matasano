@@ -3,7 +3,7 @@
 // S2C12: Byte at a time ECB Decryption
 /////////////////////////////////////////////////////
 const crypto = require('crypto');
-const { aes128EcbEncrypt, detectBlockSize, detectECBMode } = require('../../utility/blockUtils');
+const { aes128EcbEncrypt, detectBlockSize, detectECBMode } = require('../utility/blockUtils');
 
 var key = crypto.randomBytes(16);
 

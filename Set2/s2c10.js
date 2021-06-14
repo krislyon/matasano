@@ -3,10 +3,10 @@
 // S2C10: Manually Implement CBC
 /////////////////////////////////////////////////////
 const fs = require('fs');
-const { aes128DecryptManualCBC } = require('../../utility/blockUtils');
+const { aes128DecryptManualCBC } = require('../utility/blockUtils');
 
 // Load the dataset
-var fileData = fs.readFileSync('./matasano/Set2/data/10.txt', 'ascii');
+var fileData = fs.readFileSync('./Set2/data/10.txt', 'ascii');
 fileData = fileData.replace(/\r?\n|\r/g,"").trim();
 const plaintext = Buffer.from( fileData, 'base64');
 console.log("Loaded Dataset");

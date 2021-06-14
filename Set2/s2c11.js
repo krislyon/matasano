@@ -3,7 +3,7 @@
 // S2C11: ECB/CBC Detection Oracle
 /////////////////////////////////////////////////////
 const crypto = require('crypto');
-const { aes128EcbEncrypt, aes128EncryptManualCBC, getBlockArray } = require('../../utility/blockUtils');
+const { aes128EcbEncrypt, aes128EncryptManualCBC, getBlockArray } = require('../utility/blockUtils');
 
 function generateRandomAESKey(){
     return crypto.randomBytes(16);
@@ -22,7 +22,7 @@ function encryptData(plaintext){
     if( getRandomInt(0,1) == 1 ){
         // Encrypt with CBC
         console.log("Encrypting with CBC");
-        return aes128EncryptManualCBC( plaintext, key, crypto.randomBytes(16), false );
+        return aes128EncryptManualCBC( plaintext, key, crypto.randomBytes(16), true );
     }else{
         // Encrypt with ECB
         console.log("Encrypting with ECB");

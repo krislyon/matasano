@@ -2,14 +2,13 @@
 // Matasano Challenges (while learning Node.js)
 // S1C4: Load the datafile and find the xor-byte-encrypted string
 /////////////////////////////////////////////////////
-
 const fs = require('fs')
 const readline = require('readline');
 const { alpha_range_score } = require('../utility/textstats');
 
 
 var lineReader = readline.createInterface({
-    input: fs.createReadStream('matasano/Set1/data/4.txt')
+    input: fs.createReadStream('Set1/data/4.txt')
 });
 
 const analyzeLine = (line) => {

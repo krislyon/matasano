@@ -2,13 +2,11 @@
 // Matasano Challenges (while learning Node.js)
 // S1C8: Detect AES ECB Mode
 /////////////////////////////////////////////////////
-
-const { count } = require('console');
 const fs = require('fs')
 const readline = require('readline');
 
 var lineReader = readline.createInterface({
-    input: fs.createReadStream('matasano/Set1/data/8.txt')
+    input: fs.createReadStream('./Set1/data/8.txt')
 });
 
 function detectAESECB( data ){
@@ -35,5 +33,4 @@ lineReader.on( 'line', (line) => {
     detectAESECB( Buffer.from(line,'hex') );
 }).on( 'close', () => {
     console.log('Done.');
-    exit(0);
 });
