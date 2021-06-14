@@ -2,7 +2,7 @@
 // Matasano Challenges (while learning Node.js)
 // S2C13: ECB Cut and Paste
 //
-// An alternate solution using padding to craft the ending.
+// My original solution crafting an object with an extra property.
 //
 /////////////////////////////////////////////////////
 const crypto = require('crypto');
@@ -69,18 +69,23 @@ if( !detectECBMode( oracle( Buffer.alloc( blocksize * 3, 'A').toString('utf-8') 
 }
 
 // Craft time, cut and paste the blocks...
-// Part1: email=xxxxxxxxxx xxx&uid=10&role= user                  // keep block 1 & 2
-// Part2: email=xxxxxxxxxx adminPPPPPPPPPPP &uid=10&role=use r    // keep block 2.
+// Part1: email=xxxxxxxxxx xxx&uid=10&role= user      // block 1 & 2
+// Part2: email=xxxxxxxxxx admin&uid=10&rol e=user    // block 2.
+// Part3: email=xxxxxxxxxx xxxx&uid=10&role =user     // block 3
 
 // Part1: Email must be 13 chars, grab block 1 & 2
 var part1 = oracle('aaaaaaaaaaaaa');
 part1 = part1.subarray(0,32);
 
 // Part2: Email must be 15 chars and end with admin, grab block 2
-var part2 = oracle( 'aaaaaaaaaaadmin\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b\x0b' );
+var part2 = oracle( 'aaaaaaaaaaadmin' );
 part2 = part2.subarray(16,32);
 
-adminProfile = Buffer.concat([part1,part2]);
+// Part3: Email must be 14 chars, grab block 3
+var part3 = oracle('aaaaaaaaaaaaaa')
+part3 = part3.subarray(32,48);
+
+adminProfile = Buffer.concat([part1,part2,part3]);
 
 var decProfile = decryptProfile( adminProfile, aesKey );
 console.dir( decProfile );
