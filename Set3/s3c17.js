@@ -42,7 +42,8 @@ function paddingOracle( ciphertext, iv ){
 function bruteforcePadding( corruptionIndex, targetIndex, corruptedBuffer, solvedBuffer, internalStateBuffer, origByte, validPad, iv, corruptBlock ){
     var i=0;
     var found = false;
-    while( i<255 && !found){
+    var solution = false;
+    while( i<=255 && !found){
         if( corruptBlock >= 0 ){
             corruptedBuffer[corruptionIndex] = i;
         }else{
@@ -50,14 +51,28 @@ function bruteforcePadding( corruptionIndex, targetIndex, corruptedBuffer, solve
         }
 
         var oracleResult = paddingOracle( corruptedBuffer, iv );
+
         if( oracleResult == true ){
-            solvedBuffer[targetIndex%blocksize] = i ^ origByte ^ validPad;
-            internalStateBuffer[targetIndex%blocksize] = solvedBuffer[targetIndex%blocksize] ^ origByte;
-            //console.log(`i: ${i}, iStateByte: ${internalStateBuffer[targetIndex%blocksize]}, plainTextByte: ${solvedBuffer[targetIndex%blocksize]}`)
-            //          found = true;
+
+            if( solution != true ){
+                solvedBuffer[targetIndex%blocksize] = i ^ origByte ^ validPad;
+                internalStateBuffer[targetIndex%blocksize] = solvedBuffer[targetIndex%blocksize] ^ origByte;
+                //console.log(`cb[${corruptionIndex}]: 0x${corruptedBuffer[corruptionIndex].toString(16)}, i: 0x${i.toString(16)}, CxI: 0x${(corruptedBuffer[corruptionIndex]^i).toString(16)}, iStateByte: 0x${internalStateBuffer[targetIndex%blocksize].toString(16)}, plainTextByte: 0x${solvedBuffer[targetIndex%blocksize].toString(16)}`)
+                //found = true;
+                solution = true;
+            }else {
+                console.log(`******* Alternate solution detected:  ${i}`)
+            }
         }
         i++;
 
+    }
+
+    if( solution == false ){
+        console.log(`**** NO SOLUTION: cb[${corruptionIndex}]: 0x${corruptedBuffer[corruptionIndex].toString(16)}, i: 0x${i.toString(16)}, validPad: ${validPad.toString(16)}`)
+        console.log(`Corrup: ${corruptedBuffer.toString('hex')}`)
+        console.log(`IState: ${internalStateBuffer.toString('hex')}`)
+        console.log(`Solved: ${solvedBuffer.toString('hex')}`)
     }
     //console.log('----------')
 }
