@@ -49,23 +49,45 @@ var ciphertext = getMessage();
 
 
 var targetIndex = ciphertext.length - blocksize - 1;
-var origByte = ciphertext[targetIndex];
+
 var corrupted = Buffer.from( ciphertext );
+var solved = Buffer.alloc( ciphertext.length );
+var istate = Buffer.alloc( ciphertext.length );
+
 crypto.randomBytes(16).copy( corrupted, corrupted.length-32 );
 
+var targetBlock = ciphertext.length/blocksize;
+var corruptBlock = targetBlock - 1;
 
+for( var j=15; j>0; j-- ){
+    var validPad = blocksize - j;
+    corruptionIndex = (corruptBlock * blocksize) - blocksize + j;
+    targetIndex = (targetBlock * blocksize) - blocksize + j;
+    var origByte = ciphertext[corruptionIndex];
 
-var validPad = 0x01;
-for( var i=0; i<255; i++ ){
-    corrupted[targetIndex] = i;
-    var oracleResult = paddingOracle( corrupted );
-    if( oracleResult == true ){
-        var plaintextByte = i ^ origByte ^ validPad;
-        var intermediateByte = plaintextByte ^ origByte;
-        console.log(`i: ${i}, iStateByte: ${intermediateByte}, plainTextByte: ${plaintextByte}`)
+    // Inner loop: Decrypt the target byte
+    var i=0;
+    var found = false;
+
+    // Adjust the known bits of the block to match valid padding.
+    for( var k=1; k<validPad; k++ ){
+        corrupted[corruptionIndex+k] = istate[targetIndex+k] ^ validPad;
+    }
+
+    while( i<255 && !found){
+        i++;
+
+        corrupted[corruptionIndex] = i;
+
+        var oracleResult = paddingOracle( corrupted );
+        if( oracleResult == true ){
+            solved[targetIndex] = i ^ origByte ^ validPad;
+            istate[targetIndex] = solved[targetIndex] ^ origByte;
+            console.log(`i: ${i}, iStateByte: ${istate[targetIndex]}, plainTextByte: ${solved[targetIndex]}`)
+            found = true;
+        }
     }
 }
-
 
 
 
