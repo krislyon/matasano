@@ -64,6 +64,31 @@ const aes128EcbEncrypt = (plaintext,key, iv = null, enablePadding = true) => {
     return ciphertext;
 }
 
+const aes128CbcDecrypt = (ciphertext,key, iv, enablePadding = true) => {
+    var bs = createBlockStream( ciphertext, 16 );
+    var decipher = crypto.createDecipheriv('aes-128-cbc', key, iv );
+    decipher.setAutoPadding( enablePadding );
+    var plaintext = Buffer.alloc(0);
+    while( bs.available() ){
+        plaintext = Buffer.concat([ plaintext, decipher.update( bs.next() ) ]);
+    }
+    plaintext = Buffer.concat( [plaintext,decipher.final()]);
+    return plaintext;
+}
+
+const aes128CbcEncrypt = (plaintext,key, iv, enablePadding = true) => {
+    var bs = createBlockStream( plaintext, 16 );
+    var cipher = crypto.createCipheriv('aes-128-cbc', key, iv );
+    cipher.setAutoPadding( enablePadding );
+    var ciphertext = Buffer.alloc(0);
+    while( bs.available() ){
+        ciphertext = Buffer.concat( [ciphertext, cipher.update( bs.next() )] );
+    }
+    ciphertext = Buffer.concat( [ciphertext,cipher.final()] );
+    return ciphertext;
+}
+
+
 const aes128EncryptManualCBC = (plaintext,key,iv,enablePadding = true) => {
     var bs = createBlockStream( plaintext, 16 );
     var cipher = crypto.createCipheriv('aes-128-ecb', key, null );
@@ -149,6 +174,8 @@ module.exports = {
     createBlockStream,
     aes128EcbDecrypt,
     aes128EcbEncrypt,
+    aes128CbcEncrypt,
+    aes128CbcDecrypt,
     aes128EncryptManualCBC,
     aes128DecryptManualCBC,
     getBlockArray,

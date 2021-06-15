@@ -17,7 +17,7 @@ function removePkcs7Padding( input ){
             throw 'Invalid PKCS7 Padding';
         }
     }
-    console.log( Buffer.from( input.subarray(input.length-16,input.length)).toString('hex') );
+    //console.log( Buffer.from( input.subarray(input.length-16,input.length)).toString('hex') );
     return input.subarray(0,input.length-count);
 }
 

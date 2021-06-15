@@ -6,9 +6,6 @@ const crypto = require('crypto')
 const { aes128CbcEncrypt, aes128CbcDecrypt } = require('../utility/blockUtils');
 const { applyPkcs7Padding, removePkcs7Padding } = require('../utility/pkcs7');
 
-var aesKey = crypto.randomBytes(16);
-var iv = crypto.randomBytes(16);
-
 function getRandomInt(min,max){
     min = Math.ceil(min);
     max = Math.floor(max);
@@ -29,10 +26,10 @@ function getMessage(){
         "MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"
     ];
     var msg = msgData[getRandomInt(0,msgData.length-1)];
-    return aes128CbcEncrypt( applyPkcs7Padding( Buffer.from(msg,"base64"), 16, true) , aesKey, iv, false );
+    return aes128CbcEncrypt( applyPkcs7Padding( Buffer.from(msg,"base64"), 16, false ) , aesKey, iv, false );
 }
 
-function paddingOracle( ciphertext ){
+function paddingOracle( ciphertext, iv ){
     var plaintext =  aes128CbcDecrypt( ciphertext, aesKey, iv, false );
     try{
        plaintext = removePkcs7Padding( plaintext )
@@ -42,54 +39,95 @@ function paddingOracle( ciphertext ){
     return true;
 }
 
-
-var blocksize = 16;
-var ciphertext = getMessage();
-
-
-
-var targetIndex = ciphertext.length - blocksize - 1;
-
-var corrupted = Buffer.from( ciphertext );
-var solved = Buffer.alloc( ciphertext.length );
-var istate = Buffer.alloc( ciphertext.length );
-
-crypto.randomBytes(16).copy( corrupted, corrupted.length-32 );
-
-var targetBlock = ciphertext.length/blocksize;
-var corruptBlock = targetBlock - 1;
-
-for( var j=15; j>0; j-- ){
-    var validPad = blocksize - j;
-    corruptionIndex = (corruptBlock * blocksize) - blocksize + j;
-    targetIndex = (targetBlock * blocksize) - blocksize + j;
-    var origByte = ciphertext[corruptionIndex];
-
-    // Inner loop: Decrypt the target byte
+function bruteforcePadding( corruptionIndex, targetIndex, corruptedBuffer, solvedBuffer, internalStateBuffer, origByte, validPad, iv, corruptBlock ){
     var i=0;
     var found = false;
-
-    // Adjust the known bits of the block to match valid padding.
-    for( var k=1; k<validPad; k++ ){
-        corrupted[corruptionIndex+k] = istate[targetIndex+k] ^ validPad;
-    }
-
     while( i<255 && !found){
+        if( corruptBlock >= 0 ){
+            corruptedBuffer[corruptionIndex] = i;
+        }else{
+            iv[corruptionIndex] = i;
+        }
+
+        var oracleResult = paddingOracle( corruptedBuffer, iv );
+        if( oracleResult == true ){
+            solvedBuffer[targetIndex%blocksize] = i ^ origByte ^ validPad;
+            internalStateBuffer[targetIndex%blocksize] = solvedBuffer[targetIndex%blocksize] ^ origByte;
+            //console.log(`i: ${i}, iStateByte: ${internalStateBuffer[targetIndex%blocksize]}, plainTextByte: ${solvedBuffer[targetIndex%blocksize]}`)
+            //          found = true;
+        }
         i++;
 
-        corrupted[corruptionIndex] = i;
-
-        var oracleResult = paddingOracle( corrupted );
-        if( oracleResult == true ){
-            solved[targetIndex] = i ^ origByte ^ validPad;
-            istate[targetIndex] = solved[targetIndex] ^ origByte;
-            console.log(`i: ${i}, iStateByte: ${istate[targetIndex]}, plainTextByte: ${solved[targetIndex]}`)
-            found = true;
-        }
     }
+    //console.log('----------')
+}
+
+function decryptBlock( targetBlock, ciphertext, iv, blocksize ){
+    var corruptBlock = targetBlock - 1;
+    var istate = Buffer.alloc( blocksize );
+    var solved = Buffer.alloc( blocksize );
+
+    // Trim solved block from corrupted array.
+    var corrupted = Buffer.from(  ciphertext.subarray(0, (targetBlock*blocksize) + blocksize ));
+
+    // Fully corrupt the block so there is less chance of accidental valid padding
+    if( corruptBlock >= 0 ){
+        crypto.randomBytes(blocksize).copy( corrupted, corruptBlock * blocksize );
+    }else{
+        // If we're on the last block, corrupt the iv.  ( not really realistic, but lets do it anyway.)
+        crypto.randomBytes(blocksize).copy( iv, blocksize );
+    }
+
+    // Iterate through bytes in the block
+    for( var j=(blocksize-1); j>=0; j-- ){
+        var targetIndex = (targetBlock * blocksize) + j;
+        var validPad = blocksize - j;
+
+        var corruptionIndex = 0;
+        var origByte = 0;
+        if( corruptBlock >= 0 ){
+            corruptionIndex = (corruptBlock * blocksize) + j;
+            origByte = ciphertext[corruptionIndex];
+        }else{
+            corruptionIndex = j;
+            origByte = iv[corruptionIndex];
+        }
+
+        // Adjust the known bits of the block to match valid padding.
+        for( var k=1; k<validPad; k++ ){
+            if( corruptBlock >= 0 ){
+                corrupted[corruptionIndex+k] = istate[(corruptionIndex%blocksize)+k] ^ validPad;
+            }else{
+                iv[corruptionIndex+k] = istate[corruptionIndex+k] ^ validPad;
+            }
+        }
+
+        // Brute force the target byte
+        bruteforcePadding( corruptionIndex, targetIndex, corrupted, solved, istate, origByte, validPad, iv, corruptBlock );
+    }
+
+    console.log(`Decrytped Block ${targetBlock} as: [${solved.toString('hex')}], - '${solved.toString('utf-8')}'`)
+    return solved;
 }
 
 
+var aesKey = crypto.randomBytes(16);
+var iv = crypto.randomBytes(16);
+var blocksize = 16;
+var ciphertext = getMessage();
+var plaintext = Buffer.from('');
 
+console.log(`Ciphertext length: ${ciphertext.length} Bytes`);
 
+for( var block=(ciphertext.length/blocksize)-1; block>=0; block-- ){
+    // Decrypt Block
+    plaintext = Buffer.concat( [decryptBlock( block, ciphertext, iv, blocksize ),plaintext] );
+}
+
+try{
+    plaintext = removePkcs7Padding( plaintext );
+}catch( err ){
+    console.log( err );
+}
+console.log( plaintext.toString('utf-8'))
 
