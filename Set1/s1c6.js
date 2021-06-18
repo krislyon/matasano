@@ -3,7 +3,7 @@
 // S1C6: Break Repeating Key XOR
 /////////////////////////////////////////////////////
 const { calc_hamming_distance } = require('../utility/textstats');
-const { transposeDataBlocks, crackSingleByteXOR, repeatingXorEncrypt } = require('../utility/xorUtils');
+const { transposeDataBlocks, crackSingleByteXor, repeatingBufferXor } = require('../utility/xorUtils');
 const fs = require('fs');
 
 // Step1: Validate Hamming Distance Function
@@ -51,7 +51,7 @@ candidateKeySizes.forEach( keySize => {
     var blockArray = transposeDataBlocks( data, keySize );
     var candidateKeylist = [];
     for( var i=0; i<blockArray.length; i++ ){
-        candidateKeylist[i] = crackSingleByteXOR( blockArray[i] );
+        candidateKeylist[i] = crackSingleByteXor( blockArray[i] );
     }
 
 
@@ -73,5 +73,5 @@ candidateKeySizes.forEach( keySize => {
 console.log("\n");
 console.log( "Top scoring Solution:" );
 console.log('---------------------------------------')
-var result = repeatingXorEncrypt( data, Buffer.from( topSolution.key ) );
+var result = repeatingBufferXor( data, Buffer.from( topSolution.key ) );
 console.log( result.toString('ascii') )

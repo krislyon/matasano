@@ -48,11 +48,18 @@ const alpha_range_score = (buffer) => {
 
     for( var i=0; i<buffer.length;i++ ){
         var c = buffer[i];
-        if( ((c>=48)&&(c<=57)) || ((c>=65)&&(c<=90)) || ((c>=97)&&(c<=122)) || (c==32) ){
+        if( in_alpha_range(c) ){
             score++;
         }
     }
     return score/buffer.length;
+}
+
+const in_alpha_range = (c) => {
+    if( ((c>=48)&&(c<=57)) || ((c>=65)&&(c<=90)) || ((c>=97)&&(c<=122)) || (c==32) ){
+        return true;
+    }
+    return false;
 }
 
 const ascii_range_score = (buffer) => {
@@ -88,5 +95,6 @@ module.exports = {
     frequency_score,
     alpha_range_score,
     ascii_range_score,
-    calc_hamming_distance
+    calc_hamming_distance,
+    in_alpha_range
 }

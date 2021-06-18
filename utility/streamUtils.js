@@ -34,8 +34,9 @@ function getAes128CTRCipher( key, iv, leNonce, enableLog = false, counter = Buff
         // Add to stream.
         var output = this.cipher.update(this.counter);
         this.stream = Buffer.concat( [this.stream,output] );
+
         if( enableLog ){
-            console.log(`${this.counter.toString('hex')} --> ${output.toString('hex')}`)
+            console.log(`ctr: ${this.counter.toString('hex')} --> ks: ${output.toString('hex')}`)
         }
 
         // increment counter bytes

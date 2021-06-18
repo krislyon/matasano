@@ -48,7 +48,7 @@ const transposeDataBlocks = (buffer,size) => {
     return blockArray;
 }
 
-const crackSingleByteXOR = (buffer, count = 1, threshold = 0 ) => {
+const crackSingleByteXor = (buffer, count = 1, threshold = 0 ) => {
     var resultArray = [];
     for( var keyByte = 0; keyByte<0xFF; keyByte++ ){
         let result = Buffer.alloc(buffer.length);
@@ -64,7 +64,7 @@ const crackSingleByteXOR = (buffer, count = 1, threshold = 0 ) => {
     return resultArray.sort( (a,b) => a.score < b.score ? 1 : -1 ).slice(0, resultCount);
 }
 
-const repeatingXorEncrypt = (dataBuffer,keyBuffer) => {
+const repeatingBufferXor = (dataBuffer,keyBuffer) => {
     const ks = createXorKeyStream(keyBuffer);
     const ds = createByteStream(dataBuffer);
     const result = Buffer.alloc( dataBuffer.length );
@@ -76,10 +76,18 @@ const repeatingXorEncrypt = (dataBuffer,keyBuffer) => {
     return result;
 }
 
+const bufferXor = (dataBuffer,keyBuffer) => {
+    if( dataBuffer.length != keyBuffer.length ){
+        throw 'xorBuffer() failed, unequal buffer lengths.'
+    }
+    return repeatingBufferXor( dataBuffer, keyBuffer );
+}
+
 module.exports = {
     createXorKeyStream,
     createByteStream,
     transposeDataBlocks,
-    crackSingleByteXOR,
-    repeatingXorEncrypt
+    crackSingleByteXor,
+    repeatingBufferXor,
+    bufferXor,
 }

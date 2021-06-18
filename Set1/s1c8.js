@@ -14,7 +14,7 @@ function detectAESECB( data ){
     var matchCount = 0;
     for( var i=0; i<blockCount; i++ ){
         const block = data.subarray( i * 16, (i * 16) + 16);
-        console.log('i: ' + i + ' ' + block.toString('hex') );
+        //console.log('i: ' + i + ' ' + block.toString('hex') );
 
         for( var j=0; j<blockCount; j++ ){
             const candidate = data.subarray( j * 16, (j * 16) + 16 );
